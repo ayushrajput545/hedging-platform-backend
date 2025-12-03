@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { dbConnect } from './config/database';
 import cors from "cors";
 import authRoutes from './routes/authRoutes'
+import hedgeRoutes from './routes/hedgeRoutes'
  
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 //routes
 app.use('/api/v1/auth',authRoutes)
+app.use('/api/v1/hedge',hedgeRoutes)
 
 
 app.listen(PORT , ()=>{

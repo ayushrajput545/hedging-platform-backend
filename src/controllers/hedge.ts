@@ -71,26 +71,53 @@ export const getHedges = async (req: AuthRequest, res: Response) => {
   }
 };
 
+
 // Close hedge and update wallet
 export const closeHedge = async (req: AuthRequest, res: Response) => {
   try {
-    const { profitLoss } = req.body;
+    const hedgeId = req.params.id;
     const farmerId = req.user?.id;
 
-    const hedge = await Hedge.findByIdAndUpdate(
-      req.params.id,
+    // Find existing hedge
+    const hedge = await Hedge.findById(hedgeId);
+    if (!hedge) {
+      return res.status(404).json({ success: false, message: "Hedge not found" });
+    }
+
+const current = hedge.currentPrice ?? hedge.entryPrice;
+
+const profitLoss =
+  hedge.positionType === "long"
+    ? (current - hedge.entryPrice) * hedge.quantity
+    : (hedge.entryPrice - current) * hedge.quantity;
+
+
+    // Update hedge status and lock profit
+    const updatedHedge = await Hedge.findByIdAndUpdate(
+      hedgeId,
       { status: "closed", profitLoss, closedAt: new Date() },
       { new: true }
     );
 
+    // Update wallet
     await Farmer.findByIdAndUpdate(
       farmerId,
-      { $inc: { walletBalance: profitLoss } }, // add or subtract
+      { $inc: { walletBalance: profitLoss } },
       { new: true }
     );
 
-    res.json({ message: "Hedge closed & wallet updated", hedge });
+    return res.status(200).json({
+      success: true,
+      message: "Hedge closed & wallet updated",
+      hedge: updatedHedge,
+      profitLoss,
+    });
+
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to close hedge",
+      error: err.message,
+    });
   }
 };

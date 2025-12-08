@@ -6,10 +6,13 @@ export interface IHedge extends Document{
     positionType:"long"|"short";
     instrumentType: "futures" | "options";
     quantity: number;
-    entryPrice: number;
+    entryPrice?: number;
     currentPrice?: number;
     profitLoss?: number;
     status: "open" | "closed";
+    deliveryDate: Date; 
+    strikePrice?:number;
+    premium?:number
     createdAt: Date;
     closedAt?: Date;
 }
@@ -20,6 +23,11 @@ const hedgeSchema = new Schema<IHedge>({
       type: String,
       required: true,
     },
+    deliveryDate: {
+  type: Date,
+  required: true,
+},
+
     positionType: {
       type: String,
       enum: ["long", "short"],
@@ -31,10 +39,12 @@ const hedgeSchema = new Schema<IHedge>({
       required: true,
     },
     quantity: { type: Number, required: true },
-    entryPrice: { type: Number, required: true },
+    entryPrice: { type: Number},
     currentPrice: { type: Number, default: 0 },
     profitLoss: { type: Number, default: 0 },
     status: { type: String, enum: ["open", "closed"], default: "open" },
+    strikePrice: { type: Number },
+premium: { type: Number },
     createdAt: { type: Date, default: Date.now },
     closedAt: { type: Date },
 },  { timestamps: true })

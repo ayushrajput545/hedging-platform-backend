@@ -5,6 +5,7 @@ export interface IAddress {
   line2?: string;
   state: string;
   district: string;
+  pincode:number
 }
 
 export interface IUser extends Document{
@@ -39,6 +40,7 @@ const userSchema = new Schema<IUser>({
       line2: { type: String },
       state: { type: String, required: true },
       district: { type: String, required: true },
+      pincode:{type:Number, required:true}
     },
 }, {timestamps:true})
 

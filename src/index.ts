@@ -5,6 +5,7 @@ import cors from "cors";
 import authRoutes from './routes/authRoutes'
 import hedgeRoutes from './routes/hedgeRoutes'
 import contractRoutes from './routes/contractsRoutes'
+import farmerRoutes from './routes/farmerRoutes'
  
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/v1/auth',authRoutes)
 app.use('/api/v1/hedge',hedgeRoutes)
 app.use('/api/v1/contracts',contractRoutes)
+app.use('/api/v1/farmer',farmerRoutes)
 
 
 app.listen(PORT , ()=>{

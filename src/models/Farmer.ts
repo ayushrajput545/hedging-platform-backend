@@ -1,24 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface ICrop {
-  cropName: string;
-  cropType:
-    | "soybean"
-    | "groundnut"
-    | "sunflower"
-    | "mustard"
-    | "sesame"
-    | "safflower"
-    | "other";
-}
-
 export interface IFarmer extends Document {
   user: mongoose.Types.ObjectId;
 
   totalLandHolding: number;
-
-  crops: ICrop[];
-
+  crops: { cropType: string }[];   // ⭐ only cropType stored
 
   hedgingExperience: "none" | "beginner" | "intermediate" | "advanced";
   educationLevel: "primary" | "secondary" | "graduate" | "postgraduate";
@@ -48,22 +34,26 @@ const FarmerSchema = new Schema<IFarmer>(
 
     crops: [
       {
-        cropName: {
-          type: String,
-          required: true,
-        },
         cropType: {
           type: String,
           required: true,
-          enum: ["soybean","groundnut","sunflower","mustard","sesame","safflower","other",],
+          enum: [
+            "soybean",
+            "groundnut",
+            "sunflower",
+            "mustard",
+            "sesame",
+            "safflower",
+            "other"
+          ],
         },
       },
     ],
 
-
     hedgingExperience: {
       type: String,
       enum: ["none", "beginner", "intermediate", "advanced"],
+      required: true,
       default: "none",
     },
 
@@ -76,7 +66,7 @@ const FarmerSchema = new Schema<IFarmer>(
     digitalLiteracy: {
       type: String,
       enum: ["low", "medium", "high"],
-      default: "medium",
+      default: "medium",   // ⭐ default set even if not coming from frontend
     },
 
     totalContracts: {

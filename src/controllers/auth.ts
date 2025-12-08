@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { Request, Response } from "express";
 import jwt from 'jsonwebtoken'
 import User from "../models/User";
+import { Farmer } from "../models/Farmer";
 
 
 //sendOTP
@@ -65,11 +66,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
     }
 
     // Compare OTP
-    if (existingOtp.otp !== otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP",
-      });
+    if (existingOtp.otp.toString() !== otp.toString()) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
     // OTP matched → delete OTP from DB
@@ -100,6 +98,7 @@ export const createUser = async (req: Request, res: Response) => {
       email,
       role,
       addressDetail,
+      farmerProfile
     } = req.body;
 
     // Validation
@@ -110,12 +109,33 @@ export const createUser = async (req: Request, res: Response) => {
       });
     }
 
-    if (!addressDetail.line1 || !addressDetail.state || !addressDetail.district) {
+    if (
+      !addressDetail.line1 ||
+      !addressDetail.state ||
+      !addressDetail.district ||
+      !addressDetail.pincode
+    ) {
       return res.status(400).json({
         success: false,
         message: "Address details are incomplete",
       });
     }
+
+     if (role === "farmer") {
+      if (
+        !farmerProfile ||
+        !farmerProfile.totalLandHolding ||
+        !farmerProfile.hedgingExperience ||
+        !farmerProfile.educationLevel ||
+        !farmerProfile.crops
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Farmer profile details are incomplete"
+        });
+      }
+    }
+
 
     // Check existing user
     const existingUser = await User.findOne({ phoneNumber });
@@ -136,6 +156,22 @@ export const createUser = async (req: Request, res: Response) => {
       profileImage:`https://api.dicebear.com/7.x/initials/svg?seed=${firstName}%20${lastName}`,
       addressDetail,
     });
+ 
+
+        // Create farmer profile only if role is farmer
+    if (role === "farmer") {
+      await Farmer.create({
+        user: newUser._id,
+        totalLandHolding: farmerProfile.totalLandHolding,
+        crops: farmerProfile.crops,
+        hedgingExperience: farmerProfile.hedgingExperience,
+        educationLevel: farmerProfile.educationLevel,
+        digitalLiteracy: "medium",   // default
+        totalContracts: 0,
+        activeContracts: 0,
+        walletBalance: 0
+      });
+    }
 
     // Generate JWT Token
     const token = jwt.sign(

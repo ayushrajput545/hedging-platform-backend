@@ -1,33 +1,42 @@
 import { Contract, IContract } from "../models/Contracts";
 import { Request, Response } from "express";
+import { contract } from "../services/blockchainService";
+import mongoose from "mongoose";
 
-// POST /api/contracts
-export const createContract = async (req: Request, res: Response) => {
+export const createTradeBlockchain = async (req: Request, res: Response) => {
   try {
-    const {
+    const { crop, quantity, agreedPrice, marginAmount } = req.body;
+
+    const deliveryTimestamp = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60; // 7 days from now
+
+    const tx = await contract.createTrade(
       crop,
       quantity,
       agreedPrice,
-      buyerId,
-      deliveryDate,
-      status,
-      blockchainHash,
-    } = req.body;
+      deliveryTimestamp,
+      { value: marginAmount }
+    );
 
-    const contract: IContract = await Contract.create({
-    crop,
-    quantity,
-    agreedPrice,
-    buyerId,
-    deliveryDate,
-    status: status || "draft",
-    blockchainHash: blockchainHash || null,
+    const receipt = await tx.wait();
+
+    const event = receipt.logs.find((log: any) => log.fragment?.name === "TradeCreated");
+    const tradeId = event?.args?.id.toString();
+
+    const contractEntry = await Contract.create({
+      tradeId,
+      crop,
+      quantity,
+      agreedPrice,
+      deliveryDate: new Date(deliveryTimestamp * 1000),
+      status: "draft",
+      blockchainHash: receipt.hash,
     });
 
+    res.status(201).json(contractEntry);
 
-    res.status(201).json(contract);
   } catch (err: any) {
-    res.status(400).json({ message: "Failed to create contract", error: err.message });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -56,6 +65,85 @@ export const getContractById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch contract", error: err.message });
   }
 };
+
+
+export const acceptTrade = async (req: Request, res: Response) => {
+  try {
+    const mongoId = req.params.id; // this is MongoDB ObjectId, not blockchain tradeId
+
+    // Find contract entry in DB
+    const contractEntry = await Contract.findById(mongoId);
+    if (!contractEntry) {
+      return res.status(404).json({ message: "Trade not found" });
+    }
+
+    // Extract tradeId stored in DB (blockchain trade id)
+    const tradeId = contractEntry.tradeId;
+
+    // Read margin from blockchain trade struct
+    const tradeOnChain = await contract.trades(tradeId);
+    const marginAmount = tradeOnChain.marginAmount;
+
+    // Call blockchain transaction
+    const tx = await contract.acceptTrade(tradeId, {
+      value: marginAmount.toString(), // margin must be in wei
+    });
+    const receipt = await tx.wait();
+
+    // Update DB
+    contractEntry.status = "active";
+    contractEntry.blockchainHash = receipt.hash;
+    contractEntry.buyerId = req.body.buyerId; // optional
+    await contractEntry.save();
+
+    res.json({
+      message: "Trade accepted successfully",
+      txHash: receipt.hash,
+      tradeId,
+    });
+
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Trade accept failed",
+      error: err.message,
+    });
+  }
+};
+
+export const completeTrade = async (req: Request, res: Response) => {
+  try {
+    const tradeId = req.params.id;
+
+    const tx = await contract.completeTrade(tradeId);
+    const receipt = await tx.wait();
+
+    await Contract.findByIdAndUpdate(tradeId, { status: "completed", blockchainHash: receipt.hash });
+
+    res.json({ message: "Trade completed", txHash: receipt.hash });
+  } catch (err: any) {
+    res.status(500).json({ message: "Trade completion failed", error: err.message });
+  }
+};
+
+export const getLedger = async (req: Request, res: Response) => {
+  try {
+    const filter = contract.filters.TradeCreated();
+    const logs = await contract.queryFilter(filter);
+
+    res.json(
+      logs.map((log:any) => ({
+        event: log.eventName,
+        id: log.args?.id.toString(),
+        commodity: log.args?.commodity,
+        margin: log.args?.margin?.toString(),
+        txHash: log.transactionHash,
+      }))
+    );
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 
 // put /api/contracts/:id
@@ -91,3 +179,4 @@ export const getContractById = async (req: Request, res: Response) => {
 //     res.status(500).json({ message: "Failed to delete contract", error: err.message });
 //   }
 // };
+

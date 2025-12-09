@@ -2,6 +2,7 @@ import mongoose, { Document, Schema, Model } from "mongoose";
 
 export interface IContract extends Document {
   crop: "mustard" | "soybean" | "wheat" | "rice" | "other";
+  tradeId:string
   quantity: number;
   agreedPrice: number;
   buyerId?: string;
@@ -19,6 +20,12 @@ const contractSchema: Schema<IContract> = new Schema(
       required: true,
       enum: ["mustard", "soybean", "wheat", "rice", "other"],
     },
+    tradeId: {
+  type: String,
+  required: true,
+  unique: true,
+},
+
     quantity: {
       type: Number,
       required: true,

@@ -2,6 +2,7 @@ import { Contract, IContract } from "../models/Contracts";
 import { Request, Response } from "express";
 import { contract } from "../services/blockchainService";
 import mongoose from "mongoose";
+import { buyerContract } from "../services/blockchainService";
 
 export const createTradeBlockchain = async (req: Request, res: Response) => {
   try {
@@ -69,37 +70,38 @@ export const getContractById = async (req: Request, res: Response) => {
 
 export const acceptTrade = async (req: Request, res: Response) => {
   try {
-    const mongoId = req.params.id; // this is MongoDB ObjectId, not blockchain tradeId
+    const mongoId = req.params.id;
 
-    // Find contract entry in DB
     const contractEntry = await Contract.findById(mongoId);
     if (!contractEntry) {
       return res.status(404).json({ message: "Trade not found" });
     }
 
-    // Extract tradeId stored in DB (blockchain trade id)
+    // blockchain trade id
     const tradeId = contractEntry.tradeId;
 
-    // Read margin from blockchain trade struct
-    const tradeOnChain = await contract.trades(tradeId);
+    // read on-chain trade
+   const tradeOnChain = await (buyerContract as any).trades(tradeId);
+
     const marginAmount = tradeOnChain.marginAmount;
 
-    // Call blockchain transaction
-    const tx = await contract.acceptTrade(tradeId, {
-      value: marginAmount.toString(), // margin must be in wei
-    });
+    // call acceptTrade
+  const tx = await (buyerContract as any).acceptTrade(tradeId, {
+    value: marginAmount.toString(),
+  });
+
     const receipt = await tx.wait();
 
-    // Update DB
+    // update DB
     contractEntry.status = "active";
     contractEntry.blockchainHash = receipt.hash;
-    contractEntry.buyerId = req.body.buyerId; // optional
+    contractEntry.buyerId = req.body.buyerId;
     await contractEntry.save();
 
     res.json({
-      message: "Trade accepted successfully",
+      message: "Buyer accepted the trade",
       txHash: receipt.hash,
-      tradeId,
+      tradeId
     });
 
   } catch (err: any) {
@@ -109,6 +111,7 @@ export const acceptTrade = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const completeTrade = async (req: Request, res: Response) => {
   try {
@@ -147,23 +150,62 @@ export const getLedger = async (req: Request, res: Response) => {
 
 
 // put /api/contracts/:id
-// export const updateContract = async (req: Request, res: Response) => {
-//   try {
-//     const updates = req.body;
-//     const contract = await Contract.findByIdAndUpdate(req.params.id, updates, {
-//       new: true,
-//       runValidators: true,
-//     });
+export const updateContract = async (req: Request, res: Response) => {
+  try {
+    const updates = req.body; // contains negotiatedAmt or other values
+    const contract = await Contract.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true,
+    });
 
-//     if (!contract) {
-//       return res.status(404).json({ message: "Contract not found" });
-//     }
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found" });
+    }
 
-//     res.json(contract);
-//   } catch (err: any) {
-//     res.status(400).json({ message: "Failed to update contract", error: err.message });
-//   }
-// };
+    res.json(contract);
+  } catch (err: any) {
+    res.status(400).json({ message: "Failed to update contract", error: err.message });
+  }
+};
+
+export const approveNegotiation = async (req: Request, res: Response) => {
+  try {
+    const contract = await Contract.findByIdAndUpdate(
+      req.params.id,
+      {
+        isNegotiated: true,
+        agreedPrice: req.body.negotiatedAmt, // update agreed price permanently
+      },
+      { new: true }
+    );
+
+    if (!contract) return res.status(404).json({ message: "Contract not found" });
+
+    res.json(contract);
+  } catch (err: any) {
+    res.status(400).json({ message: "Approval failed", error: err.message });
+  }
+};
+
+export const rejectNegotiation = async (req: Request, res: Response) => {
+  try {
+    const contract = await Contract.findByIdAndUpdate(
+      req.params.id,
+      {
+        isNegotiated: false,
+        negotiatedAmt: null,
+      },
+      { new: true }
+    );
+
+    if (!contract) return res.status(404).json({ message: "Contract not found" });
+
+    res.json(contract);
+  } catch (err: any) {
+    res.status(400).json({ message: "Rejection failed", error: err.message });
+  }
+};
+
 
 // DELETE /api/contracts/:id
 // export const deleteContract = async (req: Request, res: Response) => {

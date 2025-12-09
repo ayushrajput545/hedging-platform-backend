@@ -9,6 +9,8 @@ export interface IContract extends Document {
   deliveryDate: Date;
   status: "draft" | "active" | "completed" | "cancelled";
   blockchainHash?: string | null;
+  negotiatedAmt?:number;
+  isNegotiated?:boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +52,13 @@ const contractSchema: Schema<IContract> = new Schema(
       type: String,
       default: null,
     },
+
+    negotiatedAmt:{
+      type:Number
+    },
+    isNegotiated:{
+      type:Boolean
+    }
   },
   {
     timestamps: true,

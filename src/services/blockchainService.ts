@@ -11,3 +11,11 @@ export const contract: any = new ethers.Contract(
   abi,
   wallet
 );
+
+// BUYER WALLET
+export const buyerWallet = new ethers.Wallet(process.env.BUYER_PRIVATE_KEY!, provider);
+export const buyerContract = new ethers.Contract(
+  BlockChianCONFIG.CONTRACT_ADDRESS,
+  abi,
+  buyerWallet
+);

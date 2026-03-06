@@ -24,22 +24,31 @@ const allowedOrigins: string[] = [
   "https://connect-pro-9z7w.vercel.app",
 ];
 
+// ... imports ...
+
+
+// ... dbConnect ...
+
+// 1. Define Options
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS Blocked"));
     }
-
-    return callback(new Error("CORS Blocked"));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
 };
 
+// 2. Apply to all requests
 app.use(cors(corsOptions));
+
+
+
+app.use(express.json());
+// ... routes ...
+
 app.use(express.json());
 
 // routes

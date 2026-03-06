@@ -16,7 +16,6 @@ const PORT = process.env.PORT || 3000;
 
 dbConnect();
 
-// allowed origins
 const allowedOrigins: string[] = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -24,12 +23,6 @@ const allowedOrigins: string[] = [
   "https://connect-pro-9z7w.vercel.app",
 ];
 
-// ... imports ...
-
-
-// ... dbConnect ...
-
-// 1. Define Options
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -41,17 +34,12 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 
-// 2. Apply to all requests
 app.use(cors(corsOptions));
 
-
-
-app.use(express.json());
-// ... routes ...
+app.options(/.*/, cors(corsOptions));
 
 app.use(express.json());
 
-// routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/hedge", hedgeRoutes);
 app.use("/api/v1/contracts", contractRoutes);

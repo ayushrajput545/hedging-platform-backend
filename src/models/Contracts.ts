@@ -9,6 +9,7 @@ export interface IContract extends Document {
   deliveryDate: Date;
   status: "draft" | "active" | "completed" | "cancelled";
   blockchainHash?: string | null;
+  isAccept?:boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,11 +51,17 @@ const contractSchema: Schema<IContract> = new Schema(
       type: String,
       default: null,
     },
+    isAccept: {
+      type: Boolean,
+     
+    },
+
   },
   {
     timestamps: true,
   }
 );
+
 
 export const Contract: Model<IContract> =
   mongoose.models.Contract || mongoose.model<IContract>("Contract", contractSchema);

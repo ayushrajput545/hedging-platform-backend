@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-const abi = require("../abi.json");
+import abi from '../abi.json';
 import { BlockChianCONFIG } from "../config/blockchainConfig";
  
 

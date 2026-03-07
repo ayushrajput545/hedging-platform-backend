@@ -1,7 +1,10 @@
 import { ethers } from "ethers";
-import abi from '../abi.json';
+import fs from "fs";
+import path from "path";
 import { BlockChianCONFIG } from "../config/blockchainConfig";
- 
+
+const abiPath = path.join(__dirname, "..", "..", "src", "abi.json");
+const abi = JSON.parse(fs.readFileSync(abiPath, "utf8"));
 
 const provider = new ethers.JsonRpcProvider(BlockChianCONFIG.RPC_URL);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
@@ -13,7 +16,10 @@ export const contract: any = new ethers.Contract(
 );
 
 // BUYER WALLET
-export const buyerWallet = new ethers.Wallet(process.env.BUYER_PRIVATE_KEY!, provider);
+export const buyerWallet = new ethers.Wallet(
+  process.env.BUYER_PRIVATE_KEY!,
+  provider
+);
 export const buyerContract = new ethers.Contract(
   BlockChianCONFIG.CONTRACT_ADDRESS,
   abi,

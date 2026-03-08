@@ -19,8 +19,7 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://connect-pro-rust.vercel.app",
-    "https://connect-pro-9z7w.vercel.app",
+    "https://hedging-frontened.vercel.app"
 ];
 const corsOptions = {
     origin: (origin, callback) => {

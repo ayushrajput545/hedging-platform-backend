@@ -2,7 +2,7 @@
 
 A simulation platform that teaches farmers how to trade crops online. Farmers get **ML-based price predictions** (next 7 and 15 days), use them to make trading decisions, and trade with FPOs and buyers. Every deal is recorded on a **blockchain smart contract** as proof of transaction.
 
-> Built for **Smart India Hackathon (SIH) 2025** by a team of [N] members. **National Finalist (Top 5 teams, Grand Finale).**
+> Built for **Smart India Hackathon (SIH) 2025** by a team of 6 members. **National Finalist (Top 5 teams, Grand Finale).**
 
 This repository contains the **Node.js / Express / MongoDB backend** and the **blockchain (Solidity) integration**. The frontend and the ML service live in separate repositories (see below).
 

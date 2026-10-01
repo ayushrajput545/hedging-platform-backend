@@ -14,7 +14,7 @@ This repository contains the **Node.js / Express / MongoDB backend** and the **b
 |---|---|---|---|
 | **Backend (this repo)** | Node.js, Express.js, MongoDB, Ethers.js | You are here | [Ayush Rajput](https://github.com/ayushrajput545) |
 | **Frontend** | Next.js, TypeScript | [FRONTEND_REPO_LINK](https://github.com/Shruti0534/Hedging_frontened) | [Shruti Tiwari](https://github.com/Shruti0534) |
-| **ML model + ML backend** | Python, [framework, e.g. FastAPI/Flask] | [ML_REPO_LINK](https://github.com/darshitachaurasia/TS_ml_backend) | [Darshita](https://github.com/darshitachaurasia) |
+| **ML model + ML backend** | Python, FastAPI | [ML_REPO_LINK](https://github.com/darshitachaurasia/TS_ml_backend) | [Darshita](https://github.com/darshitachaurasia) |
 
 ---
 

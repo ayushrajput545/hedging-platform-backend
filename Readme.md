@@ -72,8 +72,8 @@ Build a simulation platform that teaches farmers how to trade online. The platfo
 | Frontend | Next.js, TypeScript |
 | Backend | Node.js, Express.js, MongoDB (Mongoose) |
 | Blockchain | Ethereum (test network), Solidity, Ethers.js |
-| ML | Python, [add libraries, e.g. pandas, scikit-learn / LSTM] |
-| ML Backend | [e.g. FastAPI / Flask] |
+| ML | Python, [pandas, scikit-learn / LSTM] |
+| ML Backend | [FastAPI] |
 
 ---
 

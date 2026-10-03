@@ -224,9 +224,9 @@ We worked as a team of [N] through four stages:
 | Member | Role |
 |---|---|
 | Ayush Rajput | Backend, APIs, database, blockchain integration, frontend-backend integration |
-| [Name] | Frontend |
-| [Name] | ML model and ML backend |
-| [Name] | [Role] |
+| Shruti | Frontend |
+| Darshita | ML model and ML backend |
+| Prashasht | ML model |
 
 ---
 
